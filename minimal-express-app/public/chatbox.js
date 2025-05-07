@@ -49,6 +49,15 @@ async function loadMessages() {
 // Connect to the WebSocket server
 const socket = new WebSocket('ws://localhost:3000'); // Replace with your server's WebSocket URL
 
+// Log WebSocket connection status
+socket.addEventListener('open', () => {
+  console.log('WebSocket connection established');
+});
+
+socket.addEventListener('error', (error) => {
+  console.error('WebSocket error:', error);
+});
+
 // Handle incoming messages
 socket.addEventListener('message', (event) => {
   const chatMessagesDiv = document.getElementById('chat-messages');
