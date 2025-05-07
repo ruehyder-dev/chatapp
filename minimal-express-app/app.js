@@ -5,6 +5,7 @@ const { MongoClient, ObjectId } = require("mongodb");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const WebSocket = require('ws');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -483,5 +484,41 @@ async function loginUser() {
   }
 }
 
+// Create an HTTP server (if not already created)
+const server = require('http').createServer(app);
+
+// Attach WebSocket server to the HTTP server
+const wss = new WebSocket.Server({ server });
+
+// Store connected clients
+const clients = new Set();
+
+wss.on('connection', (ws) => {
+  console.log('New WebSocket connection');
+  clients.add(ws);
+
+  // Handle incoming messages
+  ws.on('message', (message) => {
+    console.log('Received:', message);
+
+    // Broadcast the message to all connected clients
+    clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  });
+
+  // Handle client disconnection
+  ws.on('close', () => {
+    console.log('WebSocket connection closed');
+    clients.delete(ws);
+  });
+});
+
+// Start the server
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 module.exports = app;

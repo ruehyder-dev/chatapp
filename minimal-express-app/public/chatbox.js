@@ -46,33 +46,35 @@ async function loadMessages() {
   }
 }
 
-// Send a message
-async function sendMessage() {
-  const token = localStorage.getItem("token");
-  const messageInput = document.getElementById("message-input");
+// Connect to the WebSocket server
+const socket = new WebSocket('ws://localhost:3000'); // Replace with your server's WebSocket URL
+
+// Handle incoming messages
+socket.addEventListener('message', (event) => {
+  const chatMessagesDiv = document.getElementById('chat-messages');
+  const message = JSON.parse(event.data); // Assuming the server sends JSON data
+
+  // Create a new message element
+  const messageDiv = document.createElement('div');
+  messageDiv.textContent = `${message.sender}: ${message.text}`;
+  chatMessagesDiv.appendChild(messageDiv);
+
+  // Scroll to the bottom of the chat
+  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+});
+
+// Send a message through WebSocket
+function sendMessage() {
+  const messageInput = document.getElementById('message-input');
   const message = messageInput.value;
 
   if (!message) return;
 
-  try {
-    const response = await fetch(`/api/chats/${chatId}/messages`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text: message }),
-    });
+  // Send the message to the server
+  socket.send(JSON.stringify({ sender: localStorage.getItem('username'), text: message }));
 
-    if (response.ok) {
-      messageInput.value = ""; // Clear input
-      loadMessages(); // Reload messages
-    } else {
-      console.error("Error sending message:", await response.json());
-    }
-  } catch (err) {
-    console.error("Error sending message:", err);
-  }
+  // Clear the input field
+  messageInput.value = '';
 }
 
 // Leave the chat
@@ -118,5 +120,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("send-button").addEventListener("click", sendMessage);
   document.getElementById("leave-button").addEventListener("click", leaveChat);
-  document.getElementById("back-button").addEventListener("click", goBack); // Add this line
+  document.getElementById("back-button").addEventListener("click", goBack);
 });
