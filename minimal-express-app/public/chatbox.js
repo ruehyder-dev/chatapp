@@ -106,6 +106,11 @@ async function leaveChat() {
   }
 }
 
+// Handle the Back button
+function goBack() {
+  window.location.href = "/chat.html"; // Redirect to the chat page
+}
+
 // Add event listeners
 document.addEventListener("DOMContentLoaded", () => {
   displayGreeting();
@@ -113,4 +118,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("send-button").addEventListener("click", sendMessage);
   document.getElementById("leave-button").addEventListener("click", leaveChat);
+  document.getElementById("back-button").addEventListener("click", goBack); // Add this line
 });
