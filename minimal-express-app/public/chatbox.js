@@ -66,15 +66,29 @@ function connectWebSocket() {
   // Handle incoming messages
   socket.addEventListener('message', (event) => {
     const chatMessagesDiv = document.getElementById('chat-messages');
+    const typingIndicator = document.getElementById('typing-indicator');
     const message = JSON.parse(event.data);
 
-    // Create a new message element
-    const messageDiv = document.createElement('div');
-    messageDiv.textContent = `${message.sender}: ${message.text}`;
-    chatMessagesDiv.appendChild(messageDiv);
+    if (message.type === 'typing') {
+      typingIndicator.textContent = `${message.sender} is typing...`;
+      typingIndicator.style.display = 'block';
 
-    // Scroll to the bottom of the chat
-    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+      // Hide the typing indicator after 3 seconds
+      setTimeout(() => {
+        typingIndicator.style.display = 'none';
+      }, 3000);
+    } else if (message.type === 'message') {
+      // Create a new message element
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = `${message.sender}: ${message.text}`;
+      chatMessagesDiv.appendChild(messageDiv);
+
+      // Scroll to the bottom of the chat
+      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+      // Hide the typing indicator if a message is received
+      typingIndicator.style.display = 'none';
+    }
   });
 
   socket.addEventListener('close', () => {
@@ -169,4 +183,20 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("leave-button").addEventListener("click", leaveChat);
   document.getElementById("back-button").addEventListener("click", goBack);
   connectWebSocket();
+});
+
+const messageInput = document.getElementById("message-input");
+let typingTimeout;
+
+// Notify the server when the user starts typing
+messageInput.addEventListener("input", () => {
+  socket.send(JSON.stringify({ type: 'typing', sender: localStorage.getItem("username") }));
+
+  // Clear the typing timeout to avoid sending multiple "typing" events
+  clearTimeout(typingTimeout);
+
+  // Stop typing after 2 seconds of inactivity
+  typingTimeout = setTimeout(() => {
+    socket.send(JSON.stringify({ type: 'stop-typing', sender: localStorage.getItem("username") }));
+  }, 2000);
 });

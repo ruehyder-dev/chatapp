@@ -504,14 +504,22 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     try {
       const parsedMessage = JSON.parse(message);
-      console.log('Received:', parsedMessage);
 
-      // Broadcast the message to all connected clients
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(parsedMessage));
-        }
-      });
+      if (parsedMessage.type === 'typing') {
+        // Broadcast the typing event to all other clients
+        wss.clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'typing', sender: parsedMessage.sender }));
+          }
+        });
+      } else if (parsedMessage.type === 'message') {
+        // Broadcast the chat message to all connected clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(parsedMessage));
+          }
+        });
+      }
     } catch (err) {
       console.error('Error parsing message:', err);
     }

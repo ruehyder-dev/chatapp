@@ -527,3 +527,10 @@ input:focus, button:hover {
 .leave-button:hover {
   background-color: #a71d2a; /* Darker red on hover */
 }
+
+#typing-indicator {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: gray;
+  font-style: italic;
+}
