@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
+</head>
+<body>
+  <!-- Animated Planet -->
+  <div class="planet-container">
+    <div class="planet"></div>
+    <div class="orbit"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <h1>Welcome to the Chat App</h1>
+    <div class="form-container">
+      <!-- Registration Form -->
+      <div class="form-box">
+        <h2>Register</h2>
+        <form onsubmit="event.preventDefault(); registerUser();">
+          <label for="register-username">Username:</label>
+          <input type="text" id="register-username" required />
+          <label for="register-password">Password:</label>
+          <input type="password" id="register-password" required />
+          <button type="submit">Register</button>
+        </form>
+        <div id="register-error" style="color: red; margin-top: 10px;"></div>
+      </div>
+
+      <!-- Login Form -->
+      <div class="form-box">
+        <h2>Login</h2>
+        <form onsubmit="event.preventDefault(); loginUser();">
+          <label for="login-username">Username:</label>
+          <input type="text" id="login-username" required />
+          <label for="login-password">Password:</label>
+          <input type="password" id="login-password" required />
+          <button type="submit">Login</button>
+        </form>
+        <div id="login-error" style="color: red; margin-top: 10px;"></div>
+      </div>
+    </div>
+    <!-- Log Out Button -->
+    <!--<button id="logout-button" onclick="logoutUser()">Log Out</button>-->
+  </div>
+  <script src="scripts.js"></script>
+</body>
+</html>
