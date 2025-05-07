@@ -74,13 +74,14 @@ socket.addEventListener('message', (event) => {
 
 // Send a message through WebSocket
 function sendMessage() {
-  const messageInput = document.getElementById('message-input');
+  const messageInput = document.getElementById("message-input");
   const message = messageInput.value;
 
   if (!message) return;
 
   // Send the message to the server
-  socket.send(JSON.stringify({ sender: localStorage.getItem('username'), text: message }));
+  socket.send(JSON.stringify({ sender: localStorage.getItem("username"), text: message }));
+  console.log('Message sent:', { sender: localStorage.getItem("username"), text: message });
 
   // Clear the input field
   messageInput.value = '';
