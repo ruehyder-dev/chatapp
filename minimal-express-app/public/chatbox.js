@@ -79,9 +79,20 @@ function sendMessage() {
 
   if (!message) return;
 
+  const username = localStorage.getItem("username");
+
   // Send the message to the server
-  socket.send(JSON.stringify({ sender: localStorage.getItem("username"), text: message }));
-  console.log('Message sent:', { sender: localStorage.getItem("username"), text: message });
+  socket.send(JSON.stringify({ sender: username, text: message }));
+  console.log('Message sent:', { sender: username, text: message });
+
+  // Display the message locally
+  const chatMessagesDiv = document.getElementById("chat-messages");
+  const messageDiv = document.createElement("div");
+  messageDiv.textContent = `${username}: ${message}`;
+  chatMessagesDiv.appendChild(messageDiv);
+
+  // Scroll to the bottom of the chat
+  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
   // Clear the input field
   messageInput.value = '';
