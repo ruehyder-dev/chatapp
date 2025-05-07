@@ -12,7 +12,7 @@ function displayGreeting() {
   }
 }
 
-// Load chat messages
+// Fetch and display chat messages
 async function loadMessages() {
   const token = localStorage.getItem("token");
   const chatMessagesDiv = document.getElementById("chat-messages");
@@ -38,8 +38,11 @@ async function loadMessages() {
         messageDiv.textContent = `${message.sender}: ${message.text}`;
         chatMessagesDiv.appendChild(messageDiv);
       });
+
+      // Scroll to the bottom of the chat
+      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     } else {
-      console.error("Error loading messages:", await response.json());
+      console.error("Failed to load messages:", await response.json());
     }
   } catch (err) {
     console.error("Error loading messages:", err);
@@ -134,7 +137,7 @@ function goBack() {
   window.location.href = "/chat.html"; // Redirect to the chat page
 }
 
-// Add event listeners
+// Call loadMessages when the page loads
 document.addEventListener("DOMContentLoaded", () => {
   displayGreeting();
   loadMessages();
