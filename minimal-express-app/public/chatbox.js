@@ -65,6 +65,12 @@ function connectWebSocket() {
 
   // Handle incoming messages
   socket.addEventListener('message', (event) => {
+    console.log('Raw WebSocket message received:', event.data); // Log the raw message
+    const message = JSON.parse(event.data);
+    console.log('Parsed WebSocket message:', message); // Log the parsed message
+  });
+
+  socket.addEventListener('message', (event) => {
     const chatMessagesDiv = document.getElementById('chat-messages');
     const typingIndicator = document.getElementById('typing-indicator');
     const message = JSON.parse(event.data);
