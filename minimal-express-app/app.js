@@ -499,14 +499,20 @@ wss.on('connection', (ws) => {
 
   // Handle incoming messages
   ws.on('message', (message) => {
-    console.log('Received:', message);
+    try {
+      // Parse the message as JSON
+      const parsedMessage = JSON.parse(message.toString());
+      console.log('Received:', parsedMessage);
 
-    // Broadcast the message to all connected clients
-    clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
+      // Broadcast the message to all connected clients
+      clients.forEach((client) => {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(parsedMessage)); // Send the message as JSON
+        }
+      });
+    } catch (err) {
+      console.error('Error parsing message:', err);
+    }
   });
 
   // Handle client disconnection
