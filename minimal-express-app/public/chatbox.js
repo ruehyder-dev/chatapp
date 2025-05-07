@@ -69,6 +69,8 @@ function connectWebSocket() {
     const typingIndicator = document.getElementById('typing-indicator');
     const message = JSON.parse(event.data);
 
+    console.log('Message received from server:', message); // Log the received message
+
     if (message.type === 'typing') {
       typingIndicator.textContent = `${message.sender} is typing...`;
       typingIndicator.style.display = 'block';
