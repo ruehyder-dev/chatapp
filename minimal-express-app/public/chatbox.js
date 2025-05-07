@@ -77,6 +77,12 @@ async function sendMessage() {
 
 // Leave the chat
 async function leaveChat() {
+  const confirmLeave = confirm("Are you sure you want to leave the chat?");
+  if (!confirmLeave) {
+    // If the user cancels, do nothing
+    return;
+  }
+
   const token = localStorage.getItem("token");
 
   try {
