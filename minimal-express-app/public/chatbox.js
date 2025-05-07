@@ -94,14 +94,20 @@ async function sendMessage() {
     return;
   }
 
+  const username = localStorage.getItem("username");
+
   try {
+    // Send the message to the server via WebSocket
+    socket.send(JSON.stringify({ sender: username, text: messageText }));
+
+    // Save the message to the database via POST request
     const response = await fetch(`/api/chats/${chatId}/messages`, {
-      method: "POST", // Ensure this is a POST request
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
-      body: JSON.stringify({ text: messageText }), // Send the message text in the body
+      body: JSON.stringify({ text: messageText }),
     });
 
     if (response.ok) {
