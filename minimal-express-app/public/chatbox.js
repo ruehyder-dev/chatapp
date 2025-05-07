@@ -50,55 +50,72 @@ async function loadMessages() {
 }
 
 // Connect to the WebSocket server
-const socket = new WebSocket('ws://localhost:3000'); // Replace with your server's WebSocket URL
+let socket;
 
-// Log WebSocket connection status
-socket.addEventListener('open', () => {
-  console.log('WebSocket connection established');
-});
+function connectWebSocket() {
+  socket = new WebSocket('ws://localhost:3000'); // Replace with your server's WebSocket URL
 
-socket.addEventListener('error', (error) => {
-  console.error('WebSocket error:', error);
-});
+  socket.addEventListener('open', () => {
+    console.log('WebSocket connection established');
+  });
 
-// Handle incoming messages
-socket.addEventListener('message', (event) => {
-  const chatMessagesDiv = document.getElementById('chat-messages');
-  const message = JSON.parse(event.data); // Assuming the server sends JSON data
+  socket.addEventListener('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
 
-  // Create a new message element
-  const messageDiv = document.createElement('div');
-  messageDiv.textContent = `${message.sender}: ${message.text}`;
-  chatMessagesDiv.appendChild(messageDiv);
+  // Handle incoming messages
+  socket.addEventListener('message', (event) => {
+    const chatMessagesDiv = document.getElementById('chat-messages');
+    const message = JSON.parse(event.data);
 
-  // Scroll to the bottom of the chat
-  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-});
+    // Create a new message element
+    const messageDiv = document.createElement('div');
+    messageDiv.textContent = `${message.sender}: ${message.text}`;
+    chatMessagesDiv.appendChild(messageDiv);
+
+    // Scroll to the bottom of the chat
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+  });
+
+  socket.addEventListener('close', () => {
+    console.log('WebSocket connection closed. Reconnecting...');
+    setTimeout(connectWebSocket, 1000); // Attempt to reconnect after 1 second
+  });
+}
 
 // Send a message through WebSocket
-function sendMessage() {
+async function sendMessage() {
+  const token = localStorage.getItem("token");
   const messageInput = document.getElementById("message-input");
-  const message = messageInput.value;
+  const messageText = messageInput.value.trim(); // Trim whitespace
 
-  if (!message) return;
+  if (!messageText) {
+    alert("Message cannot be empty.");
+    return;
+  }
 
-  const username = localStorage.getItem("username");
+  try {
+    const response = await fetch(`/api/chats/${chatId}/messages`, {
+      method: "POST", // Ensure this is a POST request
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ text: messageText }), // Send the message text in the body
+    });
 
-  // Send the message to the server
-  socket.send(JSON.stringify({ sender: username, text: message }));
-  console.log('Message sent:', { sender: username, text: message });
-
-  // Display the message locally
-  const chatMessagesDiv = document.getElementById("chat-messages");
-  const messageDiv = document.createElement("div");
-  messageDiv.textContent = `${username}: ${message}`;
-  chatMessagesDiv.appendChild(messageDiv);
-
-  // Scroll to the bottom of the chat
-  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-
-  // Clear the input field
-  messageInput.value = '';
+    if (response.ok) {
+      messageInput.value = ""; // Clear the input field after sending
+      console.log("Message sent successfully");
+    } else {
+      const error = await response.json();
+      console.error("Failed to send message:", error);
+      alert("Failed to send message.");
+    }
+  } catch (err) {
+    console.error("Error sending message:", err);
+    alert("An error occurred. Please try again.");
+  }
 }
 
 // Leave the chat
@@ -145,4 +162,5 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("send-button").addEventListener("click", sendMessage);
   document.getElementById("leave-button").addEventListener("click", leaveChat);
   document.getElementById("back-button").addEventListener("click", goBack);
+  connectWebSocket();
 });

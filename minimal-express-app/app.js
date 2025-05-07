@@ -233,6 +233,7 @@ app.post("/api/chats/:chatId/messages", authenticateToken, async (req, res) => {
   const sender = req.user.username;
 
   if (!text) {
+    console.log("Message text is missing");
     return res.status(400).json({ error: "Message text is required." });
   }
 
@@ -243,10 +244,14 @@ app.post("/api/chats/:chatId/messages", authenticateToken, async (req, res) => {
       { $push: { messages: { sender, text, createdAt: new Date() } } }
     );
 
+    console.log("Database update result:", result);
+
     if (result.modifiedCount === 0) {
+      console.log("Chat not found");
       return res.status(404).json({ error: "Chat not found." });
     }
 
+    console.log("Message saved successfully");
     res.status(201).json({ message: "Message sent successfully." });
   } catch (err) {
     console.error("Error sending message:", err);
