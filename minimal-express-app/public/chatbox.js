@@ -81,11 +81,12 @@ function handleWebSocketClose() {
 
 // Handle WebSocket messages
 function handleWebSocketMessage(event) {
+  console.log("handleWebSocketMessage triggered"); // Add this log
   const chatMessagesDiv = document.getElementById("chat-messages");
   const typingIndicator = document.getElementById("typing-indicator");
   const message = JSON.parse(event.data);
 
-  console.log("Message received from server:", message); // Log the received message
+  //console.log("Message received from server:", message); // Log the received message
 
   if (message.type === "typing") {
     typingIndicator.textContent = `${message.sender} is typing...`;
@@ -121,15 +122,6 @@ async function sendMessage() {
   }
 
   const username = localStorage.getItem("username");
-
-  // Display the message locally immediately
-  const chatMessagesDiv = document.getElementById("chat-messages");
-  const messageDiv = document.createElement("div");
-  messageDiv.textContent = `${username}: ${messageText}`;
-  chatMessagesDiv.appendChild(messageDiv);
-
-  // Scroll to the bottom of the chat
-  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
   // Clear the input field
   messageInput.value = "";
