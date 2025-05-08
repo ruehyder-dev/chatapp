@@ -510,7 +510,8 @@ wss.on('connection', (ws) => {
       // Parse the message as JSON
       const parsedMessage = JSON.parse(messageString);
 
-      if (parsedMessage.type === 'message') {
+      if (parsedMessage.type === 'message' ||
+          parsedMessage.type === 'typing') {
         console.log('Broadcasting message:', parsedMessage); // Log the parsed message
 
         // Broadcast the chat message to all connected clients
