@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '../credentials.env' }); // Load environment variables
+
 "use strict";
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -6,13 +8,22 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const WebSocket = require('ws');
+const mongoose = require('mongoose');
+const { connectToDatabase } = require("./database"); // Import the function
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB connection URI
-const uri = 'mongodb+srv://ruehyder:VqzblfkQvqaXQxbC@cluster0.hys2s2c.mongodb.net/cluster0?retryWrites=true&w=majority';
-const client = new MongoClient(uri);
+// Middleware
+app.use(express.json());
+
+// Use environment variables for MongoDB credentials
+const username = process.env.MONGO_USERNAME;
+const password = process.env.MONGO_PASSWORD;
+
+// MongoDB connection string
+const mongoUri = `mongodb+srv://${username}:${password}@cluster0.mongodb.net/myDatabase?retryWrites=true&w=majority`;
+
 
 // Middleware to parse JSON
 app.use("/api", express.json());
@@ -22,23 +33,15 @@ app.use("/api", bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Connect to MongoDB
-let db;
 (async () => {
-  db = await connectToDatabase();
-})();
-
-async function connectToDatabase() {
   try {
-    console.log('Attempting to connect to MongoDB...');
-    await client.connect();
-    console.log('Connected to MongoDB');
-    const db = client.db('cluster0');
-    return db;
+    const db = await connectToDatabase();
+    console.log("MongoDB connection established");
+    // You can now use `db` for database operations
   } catch (err) {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1);
+    console.error("Error connecting to MongoDB:", err);
   }
-}
+})();
 
 // Root route to serve index.html
 app.get("/", (req, res) => {

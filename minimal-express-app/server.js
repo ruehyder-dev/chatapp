@@ -1,24 +1,28 @@
 // filepath: /c:/repos/ChatApp/minimal-express-app/app.js
-//const express = require('express');
-//const connectToDatabase = require('./database'); // Adjust the path if necessary
-
-//const app = express();
-
-// Connect to MongoDB
-//(async () => {
-   // await connectToDatabase();
-//})();
-
-//module.exports = app;
-
-// filepath: /c:/repos/ChatApp/minimal-express-app/server.js
-const app = require("./app"); // Import app.js
+const express = require("express");
 const http = require("http");
+const { connectToDatabase } = require("./database"); // Import database logic
 
+const app = express();
 const server = http.createServer(app);
 
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+
 // Start the server
-const PORT = 3000;
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
+
+// Connect to the database
+(async () => {
+  try {
+    await connectToDatabase();
+  } catch (err) {
+    console.error("Error connecting to the database:", err);
+  }
+})();
+
+module.exports = app;

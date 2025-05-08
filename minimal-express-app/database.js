@@ -1,27 +1,25 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const { MongoClient } = require('mongodb');
+require('dotenv').config({ path: '../credentials.env' }); // Load environment variables
 
-// MongoDB connection string with your credentials
-const uri = 'mongodb+srv://ruehyder:VqzblfkQvqaXQxbC@cluster0.hys2s2c.mongodb.net/cluster0?retryWrites=true&w=majority';
+const mongoose = require('mongoose');
 
-// Create a MongoDB client
-const client = new MongoClient(uri);
+// Use the MONGO_URI environment variable
+const uri = process.env.MONGO_URI;
 
+if (!uri) {
+  throw new Error('MONGO_URI is not defined in the environment variables');
+}
+
+// Connect to MongoDB using mongoose
 async function connectToDatabase() {
   try {
-    await client.connect();
+    await mongoose.connect(uri);
     console.log('Connected to MongoDB');
-    const db = client.db('cluster0'); // Use your database name here
-    return db;
   } catch (err) {
     console.error('Error connecting to MongoDB:', err);
     process.exit(1);
   }
 }
 
-module.exports = connectToDatabase;
+module.exports = { connectToDatabase };
 
-const app = express();
-const server = http.createServer(app);
+
