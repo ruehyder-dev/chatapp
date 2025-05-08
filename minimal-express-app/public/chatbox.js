@@ -53,56 +53,60 @@ async function loadMessages() {
 let socket;
 
 function connectWebSocket() {
-  socket = new WebSocket('ws://localhost:3000'); // Replace with your server's WebSocket URL
+  if (socket) {
+    console.log("Removing existing WebSocket listeners");
+    socket.removeEventListener("message", handleWebSocketMessage);
+    socket.removeEventListener("close", handleWebSocketClose);
+  }
 
-  socket.addEventListener('open', () => {
-    console.log('WebSocket connection established');
+  socket = new WebSocket("ws://localhost:3000");
+
+  socket.addEventListener("open", () => {
+    console.log("WebSocket connection established");
   });
 
-  socket.addEventListener('error', (error) => {
-    console.error('WebSocket error:', error);
+  socket.addEventListener("error", (error) => {
+    console.error("WebSocket error:", error);
   });
 
-  // Handle incoming messages
-  socket.addEventListener('message', (event) => {
-    console.log('Raw WebSocket message received:', event.data); // Log the raw message
-    const message = JSON.parse(event.data);
-    console.log('Parsed WebSocket message:', message); // Log the parsed message
-  });
+  socket.addEventListener("message", handleWebSocketMessage);
 
-  socket.addEventListener('message', (event) => {
-    const chatMessagesDiv = document.getElementById('chat-messages');
-    const typingIndicator = document.getElementById('typing-indicator');
-    const message = JSON.parse(event.data);
+  socket.addEventListener("close", handleWebSocketClose);
+}
 
-    console.log('Message received from server:', message); // Log the received message
+function handleWebSocketClose() {
+  console.log("WebSocket connection closed. Reconnecting...");
+  setTimeout(connectWebSocket, 1000); // Attempt to reconnect after 1 second
+}
 
-    if (message.type === 'typing') {
-      typingIndicator.textContent = `${message.sender} is typing...`;
-      typingIndicator.style.display = 'block';
+// Handle WebSocket messages
+function handleWebSocketMessage(event) {
+  const chatMessagesDiv = document.getElementById("chat-messages");
+  const typingIndicator = document.getElementById("typing-indicator");
+  const message = JSON.parse(event.data);
 
-      // Hide the typing indicator after 3 seconds
-      setTimeout(() => {
-        typingIndicator.style.display = 'none';
-      }, 3000);
-    } else if (message.type === 'message') {
-      // Create a new message element
-      const messageDiv = document.createElement('div');
-      messageDiv.textContent = `${message.sender}: ${message.text}`;
-      chatMessagesDiv.appendChild(messageDiv);
+  console.log("Message received from server:", message); // Log the received message
 
-      // Scroll to the bottom of the chat
-      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+  if (message.type === "typing") {
+    typingIndicator.textContent = `${message.sender} is typing...`;
+    typingIndicator.style.display = "block";
 
-      // Hide the typing indicator if a message is received
-      typingIndicator.style.display = 'none';
-    }
-  });
+    // Hide the typing indicator after 3 seconds
+    setTimeout(() => {
+      typingIndicator.style.display = "none";
+    }, 3000);
+  } else if (message.type === "message") {
+    // Create a new message element
+    const messageDiv = document.createElement("div");
+    messageDiv.textContent = `${message.sender}: ${message.text}`;
+    chatMessagesDiv.appendChild(messageDiv);
 
-  socket.addEventListener('close', () => {
-    console.log('WebSocket connection closed. Reconnecting...');
-    setTimeout(connectWebSocket, 1000); // Attempt to reconnect after 1 second
-  });
+    // Scroll to the bottom of the chat
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+    // Hide the typing indicator if a message is received
+    typingIndicator.style.display = "none";
+  }
 }
 
 // Send a message through WebSocket
@@ -118,11 +122,23 @@ async function sendMessage() {
 
   const username = localStorage.getItem("username");
 
+  // Display the message locally immediately
+  const chatMessagesDiv = document.getElementById("chat-messages");
+  const messageDiv = document.createElement("div");
+  messageDiv.textContent = `${username}: ${messageText}`;
+  chatMessagesDiv.appendChild(messageDiv);
+
+  // Scroll to the bottom of the chat
+  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+  // Clear the input field
+  messageInput.value = "";
+
   try {
     // Send the message to the server via WebSocket
-    socket.send(JSON.stringify({ sender: username, text: messageText }));
+    socket.send(JSON.stringify({ type: "message", sender: username, text: messageText }));
 
-    // Save the message to the database via POST request
+    // Save the message to the database via HTTP POST
     const response = await fetch(`/api/chats/${chatId}/messages`, {
       method: "POST",
       headers: {
@@ -132,13 +148,9 @@ async function sendMessage() {
       body: JSON.stringify({ text: messageText }),
     });
 
-    if (response.ok) {
-      messageInput.value = ""; // Clear the input field after sending
-      console.log("Message sent successfully");
-    } else {
-      const error = await response.json();
-      console.error("Failed to send message:", error);
-      alert("Failed to send message.");
+    if (!response.ok) {
+      console.error("Failed to save message:", await response.json());
+      alert("Failed to save message.");
     }
   } catch (err) {
     console.error("Error sending message:", err);
@@ -190,7 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("send-button").addEventListener("click", sendMessage);
   document.getElementById("leave-button").addEventListener("click", leaveChat);
   document.getElementById("back-button").addEventListener("click", goBack);
-  connectWebSocket();
+
+  connectWebSocket(); // Ensure this is called only once
 });
 
 const messageInput = document.getElementById("message-input");
