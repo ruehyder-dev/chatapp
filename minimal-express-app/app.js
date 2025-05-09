@@ -33,11 +33,12 @@ app.use("/api", bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Connect to MongoDB
+let db; // Declare a global variable for the database
+
 (async () => {
   try {
-    const db = await connectToDatabase();
+    db = await connectToDatabase(); // Assign the database object
     console.log("MongoDB connection established");
-    // You can now use `db` for database operations
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);
   }
@@ -81,34 +82,35 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  // Validate input
   if (!username || !password) {
     return res.status(400).json({ error: "Username and password are required." });
   }
 
   try {
+    console.log("Connecting to users collection...");
     const usersCollection = db.collection("users");
 
-    // Check if the user exists
+    console.log("Finding user:", username);
     const user = await usersCollection.findOne({ username });
     if (!user) {
+      console.log("User not found");
       return res.status(400).json({ error: "Invalid username or password." });
     }
 
-    // Verify the password
+    console.log("Verifying password...");
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log("Password mismatch");
       return res.status(400).json({ error: "Invalid username or password." });
     }
 
-    // Create a token
-    const token = jwt.sign({ username: user.username }, "your_secret_key", { expiresIn: "1h" });
+    console.log("Creating token...");
+    const jwtSecret = process.env.JWT_SECRET || "your_secret_key";
+    const token = jwt.sign({ username: user.username }, jwtSecret, { expiresIn: "1h" });
+    console.log("Generated token:", token);
 
-    // Send the token to the client
+    console.log("Login successful");
     res.status(200).json({ message: "Login successful!", token });
-
-    // Login successful
-    //res.status(200).json({ message: "Login successful!" });
   } catch (err) {
     console.error("Error during user login:", err);
     res.status(500).json({ error: "Internal server error. Please try again later." });

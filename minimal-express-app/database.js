@@ -1,22 +1,26 @@
 require('dotenv').config({ path: '../credentials.env' }); // Load environment variables
 
-const mongoose = require('mongoose');
+const { MongoClient } = require("mongodb");
 
-// Use the MONGO_URI environment variable
-const uri = process.env.MONGO_URI;
+let db;
 
-if (!uri) {
-  throw new Error('MONGO_URI is not defined in the environment variables');
-}
-
-// Connect to MongoDB using mongoose
 async function connectToDatabase() {
+  if (db) return db; // Return the existing connection if already established
+
+  const username = process.env.MONGO_USERNAME;
+  const password = process.env.MONGO_PASSWORD;
+  const mongoUri = `mongodb+srv://${username}:${password}@cluster0.hys2s2c.mongodb.net/cluster0?retryWrites=true&w=majority`;
+
+  const client = new MongoClient(mongoUri); // Removed deprecated options
+
   try {
-    await mongoose.connect(uri);
-    console.log('Connected to MongoDB');
+    await client.connect();
+    console.log("Connected to MongoDB!");
+    db = client.db("cluster0"); // Replace "cluster0" with your actual database name
+    return db;
   } catch (err) {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1);
+    console.error("Error connecting to MongoDB:", err);
+    throw err;
   }
 }
 
