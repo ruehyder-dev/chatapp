@@ -118,20 +118,30 @@ app.post("/api/login", async (req, res) => {
 });
 
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const authHeader = req.headers["authorization"]; // Extract the 'Authorization' header from the request.
+  const token = authHeader && authHeader.split(" ")[1]; // Extract the token from the 'Bearer <token>' format.
 
   if (!token) {
+    // If no token is provided, return a 401 Unauthorized error.
     return res.status(401).json({ error: "Access denied. No token provided." });
   }
 
-  jwt.verify(token, "your_secret_key", (err, user) => {
+  const jwtSecret = process.env.JWT_SECRET; // Fetch the JWT secret key from environment variables.
+  if (!jwtSecret) {
+    // If the secret key is not defined, log an error and return a 500 Internal Server Error.
+    console.error("JWT_SECRET is not defined in the environment variables.");
+    return res.status(500).json({ error: "Internal server error." });
+  }
+
+  jwt.verify(token, jwtSecret, (err, user) => {
+    // Verify the token using the secret key.
     if (err) {
+      // If the token is invalid or expired, return a 403 Forbidden error.
       return res.status(403).json({ error: "Invalid or expired token." });
     }
 
-    req.user = user; // Attach user info to the request
-    next();
+    req.user = user; // Attach the decoded user information to the request object.
+    next(); // Call the next middleware or route handler.
   });
 };
 
