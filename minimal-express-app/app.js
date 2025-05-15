@@ -294,7 +294,7 @@ app.post("/api/chats/:chatId/leave", authenticateToken, async (req, res) => {
 
 app.post("/api/chats/:chatId/mark-as-read", authenticateToken, async (req, res) => {
   const chatId = req.params.chatId;
-  const userId = req.user.id; // Assuming `req.user` contains the authenticated user's info
+  const username = req.user.username; // Use username for consistency
 
   try {
     const chat = await Chat.findById(chatId).populate("messages");
@@ -302,13 +302,23 @@ app.post("/api/chats/:chatId/mark-as-read", authenticateToken, async (req, res) 
       return res.status(404).send({ error: "Chat not found" });
     }
 
-    // Update all unread messages to mark them as read by the current user
     let updated = false;
     for (const msg of chat.messages) {
-      if (!msg.readBy.includes(userId)) {
-        msg.readBy.push(userId);
+      if (!msg.readBy.includes(username)) {
+        msg.readBy.push(username);
         updated = true;
         await msg.save();
+
+        // --- Emit WebSocket event to the sender if not the reader ---
+        if (msg.sender !== username && userSockets.has(msg.sender)) {
+          const ws = userSockets.get(msg.sender);
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: "read",
+              messageId: msg._id
+            }));
+          }
+        }
       }
     }
 
@@ -497,32 +507,42 @@ const server = require('http').createServer(app);
 // Attach WebSocket server to the HTTP server
 const wss = new WebSocket.Server({ server });
 
+// Map usernames to WebSocket connections
+const userSockets = new Map();
+
 // Store connected clients
 const clients = new Set();
 
 wss.on('connection', (ws) => {
   console.log('New WebSocket connection');
 
+  // Temporary variable to store the username for this socket
+  let currentUsername = null;
+
   ws.on('message', (message) => {
     try {
-      // Convert the Buffer to a string
       const messageString = message.toString();
-      console.log('Message received from client (string):', messageString);
-
-      // Parse the message as JSON
       const parsedMessage = JSON.parse(messageString);
 
-      if (parsedMessage.type === 'message' ||
-          parsedMessage.type === 'typing') {
-        console.log('Broadcasting message:', parsedMessage); // Log the parsed message
+      // If this is the first message and contains the username, register it
+      if (parsedMessage.type === 'register' && parsedMessage.username) {
+        currentUsername = parsedMessage.username;
+        userSockets.set(currentUsername, ws);
+        return;
+      }
 
-        // Broadcast the chat message to all connected clients
+      // Existing message handling...
+      if (parsedMessage.type === 'message' || parsedMessage.type === 'typing') {
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
-            console.log('Sending message to client:', parsedMessage); // Log each broadcast
             client.send(JSON.stringify(parsedMessage));
           }
         });
+      }
+
+      // Handle read receipt event from client (optional, if you want to forward it)
+      if (parsedMessage.type === 'read') {
+        // You can handle this if needed
       }
     } catch (err) {
       console.error('Error parsing message:', err);
@@ -530,6 +550,9 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
+    if (currentUsername) {
+      userSockets.delete(currentUsername);
+    }
     console.log('WebSocket connection closed');
   });
 });

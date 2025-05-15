@@ -62,6 +62,8 @@ function connectWebSocket() {
 
   socket.addEventListener("open", () => {
     console.log("WebSocket connection established");
+    const username = localStorage.getItem("username");
+    socket.send(JSON.stringify({ type: "register", username }));
   });
 
   socket.addEventListener("error", (error) => {
@@ -410,9 +412,10 @@ if (typeof socket !== "undefined") {
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(event.data);
     if (message.type === "read") {
-      const readCheck = document.querySelector(`.check-mark.read[data-id="${message.messageId}"]`);
+      const readCheck = document.querySelector(`.check-mark[data-id="${message.messageId}"]`);
       if (readCheck) {
         readCheck.classList.add("read");
+        readCheck.innerHTML = "&#10003;&#10003;"; // update to double check
       }
     }
   });
@@ -460,13 +463,10 @@ function renderMessage(message) {
   // Check mark logic (only show for sent messages)
   let checkMarkHTML = "";
   if (isSent) {
-    // If every participant except the sender is in readBy, it's read
-    // (Assume you have access to chat participants, or pass it in as needed)
-    // For now, we check if readBy.length > 1 (sender + at least one more)
     if (Array.isArray(message.readBy) && message.readBy.length > 1) {
-      checkMarkHTML = `<span class="check-mark read">&#10003;&#10003;</span>`; // double green
+      checkMarkHTML = `<span class="check-mark read" data-id="${message._id}">&#10003;&#10003;</span>`; // double green
     } else {
-      checkMarkHTML = `<span class="check-mark">&#10003;</span>`; // single gray
+      checkMarkHTML = `<span class="check-mark" data-id="${message._id}">&#10003;</span>`; // single gray
     }
   }
 

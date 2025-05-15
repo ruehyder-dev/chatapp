@@ -941,6 +941,10 @@ input:focus, button:hover {
 
 .check-mark.sent {
   background-color: green; /* Green when the message is sent */
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .check-mark.read {
@@ -1100,3 +1104,27 @@ input:focus, button:hover {
   transform: translate(-50%, -50%);
   animation: rotateY 15s linear infinite; /* Slower Y-axis rotation */
 }
+.planet-container {
+  position: fixed;
+  top: 10%; /* Move to the top */
+  left: 10%; /* Move to the left */
+  width: 400px; /* Make it bigger */
+  height: 400px;
+  z-index: -1; /* Ensure it stays in the background */
+}
+
+/* Orbit (Saturn's Ring) */
+.orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 50%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg); /* Tilt the ring */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  /* Rings are stationary, no animation applied */
+}
+
+/* Planet (Saturn) */
