@@ -2,6 +2,9 @@
 window.onload = () => {
   loadActiveChats();
   displayGreeting();
+
+  // Poll for new messages every 5 second
+  setInterval(loadActiveChats, 5000); // Adjust the interval as needed
 };
 
 // Load active chats
@@ -23,13 +26,19 @@ async function loadActiveChats() {
       const noActiveChatsMessage = document.getElementById("no-active-chats-message");
 
       // Clear the active chats list
-      activeChatsList.innerHTML = "";
+      if (activeChatsList) {
+        activeChatsList.innerHTML = "";
+      }
 
-      if (chats.length === 0) {
-        noActiveChatsMessage.style.display = "block"; // Show "No active chats" message
-      } else {
-        noActiveChatsMessage.style.display = "none"; // Hide the message
+      if (noActiveChatsMessage) {
+        if (chats.length === 0) {
+          noActiveChatsMessage.style.display = "block"; // Show "No active chats" message
+        } else {
+          noActiveChatsMessage.style.display = "none"; // Hide the message
+        }
+      }
 
+      if (chats.length > 0 && activeChatsList) {
         chats.forEach(chat => {
           console.log("Chat data:", chat); // Debugging
 
