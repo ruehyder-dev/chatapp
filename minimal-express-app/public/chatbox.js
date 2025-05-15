@@ -350,15 +350,26 @@ const emojis = [
   "💦", "☔", "☂️", "🌊", "🌫"
 ];
 
-// Function to toggle the emoji picker
+// Function to toggle the emoji picker as a popup
 function toggleEmojiPicker() {
   const emojiPicker = document.getElementById("emoji-picker");
-  console.log("Toggling emoji picker"); // Debugging log
-  if (!emojiPicker) {
-    console.error("Emoji picker element not found!");
+  const emojiButton = document.getElementById("emoji-button");
+
+  if (!emojiPicker || !emojiButton) {
+    console.error("Emoji picker or button element not found!");
     return;
   }
-  emojiPicker.style.display = emojiPicker.style.display === "none" ? "block" : "none";
+
+  // Toggle the display of the emoji picker
+  if (emojiPicker.style.display === "none" || !emojiPicker.style.display) {
+    // Position the emoji picker relative to the emoji button
+    const buttonRect = emojiButton.getBoundingClientRect();
+    emojiPicker.style.top = `${buttonRect.bottom + window.scrollY}px`; // Position below the button
+    emojiPicker.style.left = `${buttonRect.left + window.scrollX}px`; // Align horizontally with the button
+    emojiPicker.style.display = "block"; // Show the picker
+  } else {
+    emojiPicker.style.display = "none"; // Hide the picker
+  }
 }
 
 // Function to insert an emoji at the cursor position
