@@ -735,3 +735,29 @@ input:focus, button:hover {
   background-color: #f0f0f0; /* Highlight emoji on hover */
   border-radius: 4px;
 }
+
+/* Style for the check marks container */
+.message-status {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Space between the check marks */
+  font-size: 12px; /* Adjust size */
+  margin-top: 5px; /* Space above the status */
+}
+
+/* Style for individual check marks */
+.check-mark {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border-radius: 50%;
+  background-color: gray; /* Default color for unsent/unread */
+}
+
+.check-mark.sent {
+  background-color: green; /* Green when the message is sent */
+}
+
+.check-mark.read {
+  background-color: green; /* Green when the message is read */
+}

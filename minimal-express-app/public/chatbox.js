@@ -128,8 +128,33 @@ function handleWebSocketMessage(event) {
       messageDiv.classList.add("left"); // Align to the left
     }
 
-    // Set the message content (remove sender name)
-    messageDiv.textContent = message.text;
+    // Set the message content
+    const messageText = document.createElement("span");
+    messageText.textContent = message.text;
+    messageDiv.appendChild(messageText);
+
+    // Add check marks for the message status
+    if (message.sender === signedInUser) {
+      const statusDiv = document.createElement("div");
+      statusDiv.classList.add("message-status");
+
+      const sentCheck = document.createElement("div");
+      sentCheck.classList.add("check-mark", "sent");
+      if (message.sent) {
+        sentCheck.classList.add("sent");
+      }
+
+      const readCheck = document.createElement("div");
+      readCheck.classList.add("check-mark", "read");
+      if (message.read) {
+        readCheck.classList.add("read");
+      }
+
+      statusDiv.appendChild(sentCheck);
+      statusDiv.appendChild(readCheck);
+      messageDiv.appendChild(statusDiv);
+    }
+
     chatMessagesDiv.appendChild(messageDiv);
 
     // Scroll to the bottom of the chat
@@ -173,7 +198,13 @@ async function sendMessage() {
       body: JSON.stringify({ text: messageText }),
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+      // Update the sent status
+      const sentCheck = document.querySelector(".check-mark.sent:last-child");
+      if (sentCheck) {
+        sentCheck.classList.add("sent");
+      }
+    } else {
       console.error("Failed to save message:", await response.json());
       alert("Failed to save message.");
     }
@@ -443,4 +474,19 @@ document.addEventListener("DOMContentLoaded", () => {
 // Add event listener for the leave button
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("leave-button").addEventListener("click", leaveChat);
+});
+
+function notifyMessageRead(messageId) {
+  socket.send(JSON.stringify({ type: "read", messageId }));
+}
+
+// Listen for WebSocket messages indicating a message has been read
+socket.addEventListener("message", (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === "read") {
+    const readCheck = document.querySelector(`.check-mark.read[data-id="${message.messageId}"]`);
+    if (readCheck) {
+      readCheck.classList.add("read");
+    }
+  }
 });
