@@ -309,3 +309,80 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set the initial height
   adjustTextareaHeight();
 });
+
+// List of emojis to display in the emoji picker
+const emojis = [
+  "😀", "😂", "😍", "😎", "😭", "😡", "👍", "👎", "🎉", "❤️", "🔥", "✨", "🎶", "🍕", "🍎",
+  "😅", "😇", "😉", "😋", "😌", "😍", "😏", "😐", "😑", "😒", "😓", "😔", "😕", "😖", "😗",
+  "😘", "😙", "😚", "😜", "😝", "😞", "😟", "😠", "😢", "😣", "😤", "😥", "😦", "😧", "😨",
+  "😩", "😪", "😫", "😬", "😭", "😮", "😯", "😰", "😱", "😲", "😳", "😴", "😵", "😶", "😷",
+  "🙁", "🙂", "🙃", "🙄", "🤐", "🤑", "🤒", "🤓", "🤔", "🤕", "🤠", "🤡", "🤢", "🤣", "🤤",
+  "🤥", "🤧", "🤨", "🤩", "🤪", "🤫", "🤬", "🤭", "🤮", "🤯", "🧐", "🥳", "🥴", "🥺", "🦄",
+  "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵",
+  "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐝",
+  "🐛", "🦋", "🐌", "🐞", "🐜", "🕷", "🦂", "🐢", "🐍", "🦎", "🐙", "🦑", "🦐", "🦀", "🐡",
+  "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦏", "🦛", "🐪",
+  "🐫", "🦙", "🦒", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🐐", "🦌", "🐕", "🐩", "🐈",
+  "🐓", "🦃", "🕊", "🐇", "🐁", "🐀", "🐿", "🦔", "🐾", "🐉", "🐲", "🌵", "🎄", "🌲", "🌳",
+  "🌴", "🌱", "🌿", "☘️", "🍀", "🎍", "🎋", "🍃", "🍂", "🍁", "🍄", "🌾", "💐", "🌷", "🌹",
+  "🥀", "🌺", "🌸", "🌼", "🌻", "🌞", "🌝", "🌛", "🌜", "🌚", "🌕", "🌖", "🌗", "🌘", "🌑",
+  "🌒", "🌓", "🌔", "🌙", "🌎", "🌍", "🌏", "💫", "⭐", "🌟", "✨", "⚡", "🔥", "💥", "☄️",
+  "🌈", "🌤", "⛅", "🌥", "🌦", "🌧", "⛈", "🌩", "🌨", "❄️", "☃️", "⛄", "🌬", "💨", "💧",
+  "💦", "☔", "☂️", "🌊", "🌫"
+];
+
+// Function to toggle the emoji picker
+function toggleEmojiPicker() {
+  const emojiPicker = document.getElementById("emoji-picker");
+  emojiPicker.style.display = emojiPicker.style.display === "none" ? "block" : "none";
+}
+
+// Function to insert an emoji at the cursor position
+function insertEmoji(emoji) {
+  const messageInput = document.getElementById("message-input");
+  const start = messageInput.selectionStart;
+  const end = messageInput.selectionEnd;
+
+  // Insert the emoji at the cursor position
+  const textBefore = messageInput.value.substring(0, start);
+  const textAfter = messageInput.value.substring(end);
+  messageInput.value = textBefore + emoji + textAfter;
+
+  // Move the cursor to the position after the inserted emoji
+  messageInput.selectionStart = messageInput.selectionEnd = start + emoji.length;
+
+  // Hide the emoji picker
+  document.getElementById("emoji-picker").style.display = "none";
+
+  // Focus back on the input box
+  messageInput.focus();
+}
+
+// Add event listeners for the emoji button and emoji picker
+document.addEventListener("DOMContentLoaded", () => {
+  const emojiButton = document.getElementById("emoji-button");
+  const emojiPicker = document.getElementById("emoji-picker");
+
+  // Populate the emoji picker with emojis
+  emojis.forEach((emoji) => {
+    const emojiSpan = document.createElement("span");
+    emojiSpan.textContent = emoji;
+    emojiSpan.addEventListener("click", () => insertEmoji(emoji));
+    emojiPicker.appendChild(emojiSpan);
+  });
+
+  // Toggle the emoji picker when the emoji button is clicked
+  emojiButton.addEventListener("click", toggleEmojiPicker);
+
+  // Hide the emoji picker if the user clicks outside of it
+  document.addEventListener("click", (event) => {
+    if (!emojiPicker.contains(event.target) && event.target.id !== "emoji-button") {
+      emojiPicker.style.display = "none";
+    }
+  });
+});
+
+// Add event listener for the leave button
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("leave-button").addEventListener("click", leaveChat);
+});

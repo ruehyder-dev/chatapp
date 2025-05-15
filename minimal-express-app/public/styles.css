@@ -564,3 +564,110 @@ input:focus, button:hover {
   color: gray;
   font-style: italic;
 }
+
+/* Style the emoji button */
+#emoji-button {
+  padding: 10px;
+  font-size: 1.2rem; /* Larger font for the emoji */
+  background-color: #f0f0f0; /* Light gray background */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#emoji-button:hover {
+  background-color: #e0e0e0; /* Slightly darker gray on hover */
+}
+
+/* Style the emoji button */
+.emoji-button {
+  width: 40px; /* Small square button */
+  height: 40px;
+  font-size: 1.2rem; /* Larger font for the emoji */
+  background-color: #f0f0f0; /* Light gray background */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px; /* Add spacing between the input and the button */
+}
+
+.emoji-button:hover {
+  background-color: #e0e0e0; /* Slightly darker gray on hover */
+}
+
+/* Style the emoji picker dropdown */
+.emoji-picker {
+  position: absolute;
+  top: auto; /* Align with the emoji button */
+  left: calc(100% + 10px); /* Place it to the right of the emoji button */
+  width: 200px;
+  max-height: 150px;
+  overflow-y: auto; /* Add scroll if there are too many emojis */
+  background-color: #fff; /* White background */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap; /* Wrap emojis to the next line */
+  gap: 5px; /* Add spacing between emojis */
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.emoji-picker span {
+  font-size: 1.2rem; /* Emoji size */
+  cursor: pointer;
+}
+
+.emoji-picker span:hover {
+  background-color: #f0f0f0; /* Highlight emoji on hover */
+  border-radius: 4px;
+}
+
+/* Style the emoji button */
+.emoji-button {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.emoji-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Style the emoji picker container */
+.emoji-picker-container {
+  position: absolute;
+  top: -300px; /* Adjust based on your layout */
+  right: 10px;
+  z-index: 1000;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the leave chat button */
+.leave-button {
+  background-color: #ff4d4d; /* Red background */
+  color: white; /* White text */
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  margin-top: 10px; /* Add spacing above the button */
+}
+
+.leave-button:hover {
+  background-color: #ff1a1a; /* Darker red on hover */
+}
