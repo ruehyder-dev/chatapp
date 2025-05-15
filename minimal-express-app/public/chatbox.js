@@ -449,15 +449,30 @@ function renderMessage(message) {
   const loggedInUser = localStorage.getItem("username");
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("chat-bubble");
-  // Compare sender to logged-in username (case-insensitive, trimmed)
-  if (
+
+  // Determine if this is a sent (right) or received (left) message
+  const isSent = (
     message.sender &&
     message.sender.trim().toLowerCase() === loggedInUser.trim().toLowerCase()
-  ) {
-    messageDiv.classList.add("right");
-  } else {
-    messageDiv.classList.add("left");
+  );
+  messageDiv.classList.add(isSent ? "right" : "left");
+
+  // Check mark logic (only show for sent messages)
+  let checkMarkHTML = "";
+  if (isSent) {
+    // If every participant except the sender is in readBy, it's read
+    // (Assume you have access to chat participants, or pass it in as needed)
+    // For now, we check if readBy.length > 1 (sender + at least one more)
+    if (Array.isArray(message.readBy) && message.readBy.length > 1) {
+      checkMarkHTML = `<span class="check-mark read">&#10003;&#10003;</span>`; // double green
+    } else {
+      checkMarkHTML = `<span class="check-mark">&#10003;</span>`; // single gray
+    }
   }
-  messageDiv.innerHTML = `<span class="message-text">${message.text}</span>`;
+
+  messageDiv.innerHTML = `
+    <span class="message-text">${message.text}</span>
+    ${checkMarkHTML}
+  `;
   return messageDiv;
 }
