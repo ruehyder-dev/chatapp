@@ -38,16 +38,14 @@ async function loadMessages() {
       messages.forEach((message) => {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("chat-bubble");
-
-        // Check if the message is from the signed-in user
         if (message.sender === signedInUser) {
-          messageDiv.classList.add("right"); // Align to the right
+          messageDiv.classList.add("right");
         } else {
-          messageDiv.classList.add("left"); // Align to the left
+          messageDiv.classList.add("left");
         }
-
-        // Set the message content (remove sender name)
-        messageDiv.textContent = message.text;
+        messageDiv.innerHTML = `
+          <span class="message-text">${message.text}</span>
+        `;
         chatMessagesDiv.appendChild(messageDiv);
       });
 
@@ -117,50 +115,18 @@ function handleWebSocketMessage(event) {
       }, 10000); // 10 seconds of inactivity
     }
   } else if (message.type === "message") {
-    // Create a new message bubble
+    const chatMessagesDiv = document.getElementById("chat-messages");
+    const signedInUser = localStorage.getItem("username");
     const messageDiv = document.createElement("div");
     messageDiv.classList.add("chat-bubble");
-
-    // Check if the message is from the signed-in user
     if (message.sender === signedInUser) {
-      messageDiv.classList.add("right"); // Align to the right
+      messageDiv.classList.add("right");
     } else {
-      messageDiv.classList.add("left"); // Align to the left
+      messageDiv.classList.add("left");
     }
-
-    // Set the message content
-    const messageText = document.createElement("span");
-    messageText.textContent = message.text;
-    messageDiv.appendChild(messageText);
-
-    // Add check marks for the message status
-    if (message.sender === signedInUser) {
-      const statusDiv = document.createElement("div");
-      statusDiv.classList.add("message-status");
-
-      const sentCheck = document.createElement("div");
-      sentCheck.classList.add("check-mark", "sent");
-      if (message.sent) {
-        sentCheck.classList.add("sent");
-      }
-
-      const readCheck = document.createElement("div");
-      readCheck.classList.add("check-mark", "read");
-      if (message.read) {
-        readCheck.classList.add("read");
-      }
-
-      statusDiv.appendChild(sentCheck);
-      statusDiv.appendChild(readCheck);
-      messageDiv.appendChild(statusDiv);
-    }
-
+    messageDiv.innerHTML = `<span class="message-text">${message.text}</span>`;
     chatMessagesDiv.appendChild(messageDiv);
-
-    // Scroll to the bottom of the chat
     chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-
-    // Hide the typing indicator if a message is received
     typingIndicator.style.display = "none";
   }
 }
@@ -518,16 +484,19 @@ if (chatId) {
 }
 
 function renderMessage(message) {
+  const loggedInUser = localStorage.getItem("username");
   const messageElement = document.createElement("div");
-  messageElement.classList.add("message");
 
-  const checkMark = message.readBy.includes(loggedInUser)
-    ? "✔✔" // Double green check mark
-    : "✔"; // Single gray check mark
+  // Check if the sender is the logged-in user
+  if (message.sender === loggedInUser) {
+    messageElement.classList.add("message", "sent"); // right side
+  } else {
+    messageElement.classList.add("message", "received"); // left side
+  }
 
   messageElement.innerHTML = `
     <p>${message.text}</p>
-    <span class="check-mark">${checkMark}</span>
+    <span class="sender">${message.sender}</span>
   `;
 
   return messageElement;

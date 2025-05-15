@@ -268,27 +268,212 @@ input:focus, button:hover {
 
 /* Chat bubble for all messages */
 .chat-bubble {
-  max-width: 70%; /* Limit the width of the bubble */
-  padding: 10px;
-  border-radius: 10px;
-  margin: 5px 0;
-  font-size: 14px;
-  line-height: 1.4;
-  word-wrap: break-word;
+  max-width: 60%;
+  margin: 8px 0;
+  padding: 10px 16px;
+  border-radius: 18px;
+  font-size: 1rem;
+  word-break: break-word;
+  display: inline-block;
+  clear: both;
+  position: relative;
 }
 
 /* Other users' messages (on the left) */
 .chat-bubble.left {
-  background-color: #f0f0f0; /* Light gray background */
-  color: #000; /* Black text */
-  align-self: flex-start; /* Align to the left */
+  background: #f1f0f0;
+  color: #222;
+  float: left;
+  align-self: flex-start;
+  margin-right: auto;
 }
 
 /* Signed-in user's messages (on the right) */
 .chat-bubble.right {
-  background-color: #007bff; /* Blue background */
+  background: #0084ff;
+  color: #fff;
+  float: right;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+/* Form Inputs */
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+}
+
+/* Form Buttons */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(to right, #ff6a00, #ee0979);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(to right, #ee0979, #ff6a00);
+}
+
+/* Add Glow Effect */
+input:focus, button:hover {
+  outline: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Planet Container */
+.planet-container {
+  position: fixed;
+  top: 10%; /* Move to the top */
+  left: 10%; /* Move to the left */
+  width: 400px; /* Make it bigger */
+  height: 400px;
+  z-index: -1; /* Ensure it stays in the background */
+}
+
+/* Orbit (Saturn's Ring) */
+.orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 50%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg); /* Tilt the ring */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  /* Rings are stationary, no animation applied */
+}
+
+/* Planet (Saturn) */
+.planet {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px; /* Bigger planet */
+  height: 150px;
+  background: radial-gradient(circle at 30% 30%, #ffcc33, #ff9900, #cc6600); /* Saturn-like colors */
+  border-radius: 50%; /* Makes it circular */
+  box-shadow: 
+    inset -20px -20px 40px rgba(0, 0, 0, 0.5), /* Inner shadow for depth */
+    10px 10px 20px rgba(0, 0, 0, 0.3), /* Outer shadow for depth */
+    0 0 50px rgba(255, 255, 255, 0.2); /* Glow effect */
+  transform: translate(-50%, -50%);
+  animation: rotateY 15s linear infinite; /* Slower Y-axis rotation */
+}
+
+/* Add a subtle lighting effect */
+.planet::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 70%);
+  border-radius: 50%;
+  z-index: 1; /* Place it above the planet */
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
+}
+
+/* Keyframes for Planet Y-Axis Rotation */
+@keyframes rotateY {
+  0% {
+    transform: translate(-50%, -50%) rotateY(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotateY(360deg);
+  }
+}
+
+/* Keyframes for Orbit Spin */
+@keyframes spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Keyframes for Planet Revolution */
+@keyframes revolve {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Log Out Button */
+#logout-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(to right, #ff6a00, #ee0979);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#logout-button:hover {
+  background: linear-gradient(to right, #ee0979, #ff6a00);
+  transform: scale(1.05);
+}
+
+#logout-button:active {
+  transform: scale(0.95);
+}
+
+/* Chat Box Styles */
+.chatbox-container {
+  margin-top: 80px; /* Push below the header */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 80px auto;
+  border: 1px solid #444; /* Dark border */
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #000; /* Black background */
   color: #fff; /* White text */
-  align-self: flex-end; /* Align to the right */
+}
+
+.chatbox-container h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Chat messages container */
+#chat-messages {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  height: 400px;
+  overflow-y: auto;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
 /* Chat Input Styles */
@@ -760,4 +945,158 @@ input:focus, button:hover {
 
 .check-mark.read {
   background-color: green; /* Green when the message is read */
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#logout-button:hover {
+  background: linear-gradient(to right, #ee0979, #ff6a00);
+  transform: scale(1.05);
+}
+
+#logout-button:active {
+  transform: scale(0.95);
+}
+
+/* Chat Box Styles */
+.chatbox-container {
+  margin-top: 80px; /* Push below the header */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 80px auto;
+  border: 1px solid #444; /* Dark border */
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #000; /* Black background */
+  color: #fff; /* White text */
+}
+
+.chatbox-container h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Chat messages container */
+#chat-messages {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  height: 400px;
+  overflow-y: auto;
+  background: #222; /* Dark background */
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+/* Chat bubble for all messages */
+.chat-bubble {
+  max-width: 60%;
+  margin: 8px 0;
+  padding: 10px 16px;
+  border-radius: 18px;
+  font-size: 1rem;
+  word-break: break-word;
+  display: inline-block;
+  clear: both;
+  position: relative;
+}
+
+/* Other users' messages (on the left) */
+.chat-bubble.left {
+  background: #f1f0f0;
+  color: #222;
+  float: left;
+  align-self: flex-start;
+  margin-right: auto;
+}
+
+/* Signed-in user's messages (on the right) */
+.chat-bubble.right {
+  background: #0084ff;
+  color: #fff;
+  float: right;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+/* Form Inputs */
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+}
+
+/* Form Buttons */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(to right, #ff6a00, #ee0979);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(to right, #ee0979, #ff6a00);
+}
+
+/* Add Glow Effect */
+input:focus, button:hover {
+  outline: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Planet Container */
+.planet-container {
+  position: fixed;
+  top: 10%; /* Move to the top */
+  left: 10%; /* Move to the left */
+  width: 400px; /* Make it bigger */
+  height: 400px;
+  z-index: -1; /* Ensure it stays in the background */
+}
+
+/* Orbit (Saturn's Ring) */
+.orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 50%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg); /* Tilt the ring */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  /* Rings are stationary, no animation applied */
+}
+
+/* Planet (Saturn) */
+.planet {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px; /* Bigger planet */
+  height: 150px;
+  background: radial-gradient(circle at 30% 30%, #ffcc33, #ff9900, #cc6600); /* Saturn-like colors */
+  border-radius: 50%; /* Makes it circular */
+  box-shadow: 
+    inset -20px -20px 40px rgba(0, 0, 0, 0.5), /* Inner shadow for depth */
+    10px 10px 20px rgba(0, 0, 0, 0.3), /* Outer shadow for depth */
+    0 0 50px rgba(255, 255, 255, 0.2); /* Glow effect */
+  transform: translate(-50%, -50%);
+  animation: rotateY 15s linear infinite; /* Slower Y-axis rotation */
 }

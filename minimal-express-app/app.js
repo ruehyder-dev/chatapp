@@ -17,19 +17,7 @@ const Chat = require("./models/Chat"); // Import your Chat model
 const app = express();
 app.use(express.json());
 
-connectToDatabase()
-  .then(() => {
-    console.log("Database connected. Starting server...");
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000");
-    });
-  })
-  .catch(err => {
-    console.error("Failed to connect to the database:", err);
-    process.exit(1); // Exit the process if the database connection fails
-  });
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json());
@@ -76,18 +64,15 @@ app.post("/api/register", async (req, res) => {
   }
 
   try {
-    const usersCollection = db.collection("users");
-
     // Check if the username already exists
-    const existingUser = await usersCollection.findOne({ username });
-
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ error: "Username already exists." });
     }
 
     // Insert the new user into the database with a hashed password
     const hashedPassword = await bcrypt.hash(password, 10);
-    await usersCollection.insertOne({ username, password: hashedPassword });
+    await User.create({ username, password: hashedPassword });
     res.status(201).json({ message: "User registered successfully. You can now log in." });
   } catch (err) {
     console.error("Error during registration:", err);
@@ -152,9 +137,8 @@ app.get("/api/chat", authenticateToken, (req, res) => {
 });
 
 app.get("/api/active-chats", authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-
   try {
+    const userId = req.user.username; // or req.user.id if you use IDs
     const chats = await Chat.find({ participants: userId }).populate("messages");
     res.send(chats);
   } catch (err) {
@@ -167,12 +151,10 @@ app.get("/api/search-users", authenticateToken, async (req, res) => {
   const query = req.query.query; // The search query from the client
 
   try {
-    const usersCollection = db.collection("users");
-
-    // Perform a case-insensitive search using $regex
-    const users = await usersCollection
-      .find({ username: { $regex: query, $options: "i" } }) // Case-insensitive search
-      .toArray();
+    // Use Mongoose User model for search
+    const users = await User.find({
+      username: { $regex: query, $options: "i" }
+    });
 
     // Exclude the current user from the search results
     const filteredUsers = users.filter(user => user.username !== req.user.username);
@@ -193,10 +175,8 @@ app.post("/api/start-chat", authenticateToken, async (req, res) => {
   }
 
   try {
-    const chatsCollection = db.collection("chats");
-
     // Check if a chat already exists between the two users
-    const existingChat = await chatsCollection.findOne({
+    let existingChat = await Chat.findOne({
       participants: { $all: [sender, recipient] },
     });
 
@@ -205,14 +185,13 @@ app.post("/api/start-chat", authenticateToken, async (req, res) => {
     }
 
     // Create a new chat
-    const newChat = {
+    const newChat = await Chat.create({
       participants: [sender, recipient],
-      messages: [], // Initialize with no messages
+      messages: [],
       createdAt: new Date(),
-    };
+    });
 
-    const result = await chatsCollection.insertOne(newChat);
-    res.status(201).json({ message: "Chat started successfully.", chatId: result.insertedId });
+    res.status(201).json({ message: "Chat started successfully.", chatId: newChat._id });
   } catch (err) {
     console.error("Error starting chat:", err);
     res.status(500).json({ error: "Failed to start chat." });
@@ -223,13 +202,10 @@ app.get("/api/chats/:chatId", authenticateToken, async (req, res) => {
   const { chatId } = req.params;
 
   try {
-    const chatsCollection = db.collection("chats");
-    const chat = await chatsCollection.findOne({ _id: new ObjectId(chatId) });
-
+    const chat = await Chat.findById(chatId).populate("messages");
     if (!chat) {
       return res.status(404).json({ error: "Chat not found." });
     }
-
     res.json(chat.messages);
   } catch (err) {
     console.error("Error fetching messages:", err);
@@ -267,53 +243,40 @@ app.post("/api/chats/:chatId/leave", authenticateToken, async (req, res) => {
   const username = req.user.username; // Logged-in user's username
 
   try {
-    const chatsCollection = db.collection("chats");
-
-    // Find the chat
-    const chat = await chatsCollection.findOne({ _id: new ObjectId(chatId) });
+    const chat = await Chat.findById(chatId);
     if (!chat) {
       return res.status(404).json({ error: "Chat not found." });
     }
 
     // Remove the user from the participants array
-    const updatedParticipants = chat.participants.filter(user => user !== username);
+    chat.participants = chat.participants.filter(user => user !== username);
 
     // Add the user to the leftParticipants array (create it if it doesn't exist)
-    const updatedLeftParticipants = chat.leftParticipants || [];
-    if (!updatedLeftParticipants.includes(username)) {
-      updatedLeftParticipants.push(username);
+    chat.leftParticipants = chat.leftParticipants || [];
+    if (!chat.leftParticipants.includes(username)) {
+      chat.leftParticipants.push(username);
     }
 
     // Ensure the allParticipants field exists and includes all users who were ever part of the chat
-    const updatedAllParticipants = chat.allParticipants || [...chat.participants];
-    if (!updatedAllParticipants.includes(username)) {
-      updatedAllParticipants.push(username);
+    chat.allParticipants = chat.allParticipants || [...chat.participants];
+    if (!chat.allParticipants.includes(username)) {
+      chat.allParticipants.push(username);
     }
 
     // Add a system message indicating the user has left
-    const systemMessage = {
+    chat.messages.push({
       sender: "System",
       text: `${username} has left the chat.`,
       createdAt: new Date(),
-    };
+    });
 
-    if (updatedParticipants.length === 0) {
+    if (chat.participants.length === 0) {
       // If no participants remain, delete the chat
-      await chatsCollection.deleteOne({ _id: new ObjectId(chatId) });
+      await Chat.findByIdAndDelete(chatId);
       return res.status(200).json({ message: "Chat deleted as no participants remain." });
     } else {
       // Otherwise, update the chat
-      await chatsCollection.updateOne(
-        { _id: new ObjectId(chatId) },
-        {
-          $set: {
-            participants: updatedParticipants,
-            leftParticipants: updatedLeftParticipants,
-            allParticipants: updatedAllParticipants,
-          },
-          $push: { messages: systemMessage },
-        }
-      );
+      await chat.save();
       return res.status(200).json({ message: "You have left the chat." });
     }
   } catch (err) {
@@ -327,17 +290,22 @@ app.post("/api/chats/:chatId/mark-as-read", authenticateToken, async (req, res) 
   const userId = req.user.id; // Assuming `req.user` contains the authenticated user's info
 
   try {
-    const chat = await db.collection("chats").findOne({ _id: chatId });
+    const chat = await Chat.findById(chatId).populate("messages");
     if (!chat) {
       return res.status(404).send({ error: "Chat not found" });
     }
 
     // Update all unread messages to mark them as read by the current user
-    await db.collection("chats").updateOne(
-      { _id: chatId },
-      { $set: { "messages.$[msg].readBy": userId } },
-      { arrayFilters: [{ "msg.readBy": { $ne: userId } }] }
-    );
+    let updated = false;
+    for (const msg of chat.messages) {
+      if (!msg.readBy.includes(userId)) {
+        msg.readBy.push(userId);
+        updated = true;
+        await msg.save();
+      }
+    }
+
+    if (updated) await chat.save();
 
     res.send({ success: true });
   } catch (err) {
@@ -559,9 +527,16 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+connectToDatabase()
+  .then(() => {
+    console.log("Database connected. Starting server...");
+    server.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error("Failed to connect to the database:", err);
+    process.exit(1);
+  });
 
 module.exports = app;
