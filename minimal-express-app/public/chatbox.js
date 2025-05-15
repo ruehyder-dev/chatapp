@@ -81,22 +81,27 @@ function handleWebSocketClose() {
 
 // Handle WebSocket messages
 function handleWebSocketMessage(event) {
-console.log("handleWebSocketMessage triggered"); // Add this log
+  console.log("handleWebSocketMessage triggered"); // Add this log
   const chatMessagesDiv = document.getElementById("chat-messages");
   const typingIndicator = document.getElementById("typing-indicator");
   const message = JSON.parse(event.data);
 
   console.log("Message received from server:", message); // Log the received message
 
+  const signedInUser = localStorage.getItem("username"); // Get the signed-in user's username
+
   if (message.type === "typing") {
-    typingIndicator.textContent = `${message.sender} is typing...`;
-    typingIndicator.style.display = "block";
-    new Promise((resolve) => setTimeout(() => {
-      resolve();
-    }, 3000)).then(() => {
-      // Hide the typing indicator after 2 seconds
-      typingIndicator.style.display = "none"; 
-    });
+    if (message.sender !== signedInUser) {
+      // Only show the typing indicator if the sender is not the signed-in user
+      typingIndicator.textContent = `${message.sender} is typing...`;
+      typingIndicator.style.display = "block";
+      new Promise((resolve) => setTimeout(() => {
+        resolve();
+      }, 3000)).then(() => {
+        // Hide the typing indicator after 3 seconds
+        typingIndicator.style.display = "none";
+      });
+    }
   } else if (message.type === "message") {
     // Create a new message element
     const messageDiv = document.createElement("div");
