@@ -48,13 +48,15 @@ async function loadActiveChats() {
 
           console.log("Other user:", otherUser); // Debugging
 
-          const lastMessage = chat.messages.length > 0 ? chat.messages[0].text : "No messages yet";
+          // Get the latest message and truncate if necessary
+          const latestMessage = chat.messages.length > 0 ? chat.messages[0].text : "No messages yet";
+          const truncatedMessage = latestMessage.length > 50 ? latestMessage.substring(0, 50) + "..." : latestMessage;
 
           const chatItem = document.createElement("div");
           chatItem.classList.add("chat-item");
           chatItem.innerHTML = `
             <strong>${otherUser || "Unknown User"}</strong>
-            <p>${lastMessage}</p>
+            <p>${truncatedMessage}</p>
           `;
 
           // Add a click event to open the chat
