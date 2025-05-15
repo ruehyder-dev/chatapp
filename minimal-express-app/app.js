@@ -216,13 +216,13 @@ app.get("/api/chats/:chatId", authenticateToken, async (req, res) => {
 app.post("/api/chats/:chatId/messages", authenticateToken, async (req, res) => {
   const { chatId } = req.params;
   const { text } = req.body;
-  const sender = req.user.id;
+  const sender = req.user.username; // Use username, not id
 
   try {
     const newMessage = new Message({
       text,
       sender,
-      readBy: [sender] // Add the sender to the `readBy` array
+      readBy: [sender]
     });
 
     // Save the message to the database
@@ -263,12 +263,15 @@ app.post("/api/chats/:chatId/leave", authenticateToken, async (req, res) => {
       chat.allParticipants.push(username);
     }
 
-    // Add a system message indicating the user has left
-    chat.messages.push({
+    // --- FIX: Create and save a system message, then push its _id ---
+    const systemMessage = new Message({
       sender: "System",
       text: `${username} has left the chat.`,
       createdAt: new Date(),
+      readBy: [], // or [username] if you want the leaver to have read it
     });
+    await systemMessage.save();
+    chat.messages.push(systemMessage._id);
 
     if (chat.participants.length === 0) {
       // If no participants remain, delete the chat
