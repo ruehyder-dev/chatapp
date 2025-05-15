@@ -33,9 +33,21 @@ async function loadMessages() {
     if (response.ok) {
       const messages = await response.json();
       chatMessagesDiv.innerHTML = ""; // Clear existing messages
+      const signedInUser = localStorage.getItem("username");
+
       messages.forEach((message) => {
         const messageDiv = document.createElement("div");
-        messageDiv.textContent = `${message.sender}: ${message.text}`;
+        messageDiv.classList.add("chat-bubble");
+
+        // Check if the message is from the signed-in user
+        if (message.sender === signedInUser) {
+          messageDiv.classList.add("right"); // Align to the right
+        } else {
+          messageDiv.classList.add("left"); // Align to the left
+        }
+
+        // Set the message content (remove sender name)
+        messageDiv.textContent = message.text;
         chatMessagesDiv.appendChild(messageDiv);
       });
 
@@ -116,8 +128,8 @@ function handleWebSocketMessage(event) {
       messageDiv.classList.add("left"); // Align to the left
     }
 
-    // Set the message content
-    messageDiv.textContent = `${message.sender}: ${message.text}`;
+    // Set the message content (remove sender name)
+    messageDiv.textContent = message.text;
     chatMessagesDiv.appendChild(messageDiv);
 
     // Scroll to the bottom of the chat

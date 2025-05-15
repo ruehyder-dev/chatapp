@@ -266,7 +266,7 @@ input:focus, button:hover {
   margin-bottom: 20px;
 }
 
-/* Chat bubble for other users */
+/* Chat bubble for all messages */
 .chat-bubble {
   max-width: 70%; /* Limit the width of the bubble */
   padding: 10px;
