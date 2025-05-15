@@ -199,14 +199,33 @@ function goBack() {
 
 // Call loadMessages when the page loads
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize the emoji picker
+  const emojiButton = document.getElementById("emoji-button");
+  const emojiPicker = document.getElementById("emoji-picker");
+
+  emojis.forEach((emoji) => {
+    const emojiSpan = document.createElement("span");
+    emojiSpan.textContent = emoji;
+    emojiSpan.addEventListener("click", () => insertEmoji(emoji));
+    emojiPicker.appendChild(emojiSpan);
+  });
+
+  emojiButton.addEventListener("click", toggleEmojiPicker);
+
+  // Hide the emoji picker if the user clicks outside of it
+  document.addEventListener("click", (event) => {
+    if (!emojiPicker.contains(event.target) && event.target.id !== "emoji-button") {
+      emojiPicker.style.display = "none";
+    }
+  });
+
+  // Add other DOMContentLoaded logic here
   displayGreeting();
   loadMessages();
-
   document.getElementById("send-button").addEventListener("click", sendMessage);
   document.getElementById("leave-button").addEventListener("click", leaveChat);
   document.getElementById("back-button").addEventListener("click", goBack);
-
-  connectWebSocket(); // Ensure this is called only once
+  connectWebSocket();
 });
 
 // Handle typing events
@@ -334,6 +353,11 @@ const emojis = [
 // Function to toggle the emoji picker
 function toggleEmojiPicker() {
   const emojiPicker = document.getElementById("emoji-picker");
+  console.log("Toggling emoji picker"); // Debugging log
+  if (!emojiPicker) {
+    console.error("Emoji picker element not found!");
+    return;
+  }
   emojiPicker.style.display = emojiPicker.style.display === "none" ? "block" : "none";
 }
 
@@ -365,6 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Populate the emoji picker with emojis
   emojis.forEach((emoji) => {
+    console.log("Adding emoji:", emoji); // Debugging log
     const emojiSpan = document.createElement("span");
     emojiSpan.textContent = emoji;
     emojiSpan.addEventListener("click", () => insertEmoji(emoji));
