@@ -427,6 +427,36 @@ input:focus, button:hover {
   color: #fff; /* White text */
 }
 
+/* Ensure the input box has a minimum width and doesn't break the layout */
+#message-input {
+  min-width: 200px; /* Minimum width for the input box */
+  max-width: 100%; /* Prevent the input box from exceeding the container width */
+  padding: 10px; /* Add padding for better appearance */
+  font-size: 16px; /* Match the font size for better readability */
+  box-sizing: border-box; /* Include padding in width calculations */
+  transition: width 0.2s ease; /* Smooth transition when resizing */
+}
+
+/* Style the message input (textarea) */
+#message-input {
+  min-height: 40px; /* Minimum height for the textarea */
+  max-height: 200px; /* Optional: Limit the maximum height */
+  width: 100%; /* Ensure the textarea takes up the full width of the container */
+  padding: 10px; /* Add padding for better appearance */
+  font-size: 16px; /* Match the font size for better readability */
+  box-sizing: border-box; /* Include padding in width/height calculations */
+  resize: none; /* Prevent manual resizing */
+  overflow-y: auto; /* Add a scrollbar if the content exceeds the max height */
+  word-wrap: break-word; /* Ensure long words wrap properly */
+}
+
+/* Ensure the message input container stays aligned */
+.message-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add spacing between the input and buttons */
+}
+
 #send-button {
   padding: 10px 20px;
   background-color: #007bff; /* Blue button */

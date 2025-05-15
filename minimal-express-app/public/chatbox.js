@@ -259,3 +259,53 @@ document.addEventListener("DOMContentLoaded", () => {
   // Connect to the WebSocket server
   connectWebSocket();
 });
+
+function adjustTextareaWidth() {
+  const messageInput = document.getElementById("message-input");
+
+  // Create a temporary span element to measure the text width
+  const tempSpan = document.createElement("span");
+  tempSpan.style.visibility = "hidden"; // Hide the span
+  tempSpan.style.whiteSpace = "pre"; // Preserve spaces
+  tempSpan.style.font = window.getComputedStyle(messageInput).font; // Match the textarea's font style
+  tempSpan.textContent = messageInput.value || " "; // Use the textarea's value or a single space if empty
+
+  document.body.appendChild(tempSpan); // Add the span to the DOM to measure its width
+  const textWidth = tempSpan.offsetWidth; // Get the width of the text
+  document.body.removeChild(tempSpan); // Remove the span from the DOM
+
+  // Set the textarea's width dynamically, with a minimum width
+  messageInput.style.width = Math.max(200, textWidth + 20) + "px"; // Minimum width of 200px, add padding
+}
+
+// Add event listener to adjust the textarea width dynamically
+document.addEventListener("DOMContentLoaded", () => {
+  const messageInput = document.getElementById("message-input");
+
+  // Adjust the width on input
+  messageInput.addEventListener("input", adjustTextareaWidth);
+
+  // Set the initial width
+  adjustTextareaWidth();
+});
+
+function adjustTextareaHeight() {
+  const messageInput = document.getElementById("message-input");
+
+  // Reset the height to auto to calculate the correct scrollHeight
+  messageInput.style.height = "auto";
+
+  // Set the height to match the content
+  messageInput.style.height = messageInput.scrollHeight + "px";
+}
+
+// Add event listener to adjust the textarea height dynamically
+document.addEventListener("DOMContentLoaded", () => {
+  const messageInput = document.getElementById("message-input");
+
+  // Adjust the height on input
+  messageInput.addEventListener("input", adjustTextareaHeight);
+
+  // Set the initial height
+  adjustTextareaHeight();
+});

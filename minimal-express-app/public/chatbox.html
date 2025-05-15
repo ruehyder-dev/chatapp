@@ -20,9 +20,11 @@
 
     <!-- Message input and buttons -->
     <div class="message-input-container">
-      <input type="text" id="message-input" placeholder="Type your message here..." />
+      <textarea id="message-input" placeholder="Type your message here..."></textarea>
+      <button id="emoji-button" class="button">😊</button> <!-- Emoji button -->
       <button id="send-button" class="button">Send</button>
       <button id="leave-button" class="button leave-button">Leave Chat</button>
+      <div id="emoji-picker" class="emoji-picker" style="display: none;"></div> <!-- Emoji picker container -->
     </div>
   </div>
 </body>
