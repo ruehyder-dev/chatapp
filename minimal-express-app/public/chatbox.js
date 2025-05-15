@@ -490,3 +490,45 @@ socket.addEventListener("message", (event) => {
     }
   }
 });
+
+// Mark messages as read when the chatbox is opened
+async function markMessagesAsRead(chatId) {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`/api/chats/${chatId}/mark-as-read`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to mark messages as read");
+    }
+  } catch (err) {
+    console.error("Error marking messages as read:", err);
+  }
+}
+
+// Call this function when the chatbox is loaded
+if (chatId) {
+  markMessagesAsRead(chatId);
+}
+
+function renderMessage(message) {
+  const messageElement = document.createElement("div");
+  messageElement.classList.add("message");
+
+  const checkMark = message.readBy.includes(loggedInUser)
+    ? "✔✔" // Double green check mark
+    : "✔"; // Single gray check mark
+
+  messageElement.innerHTML = `
+    <p>${message.text}</p>
+    <span class="check-mark">${checkMark}</span>
+  `;
+
+  return messageElement;
+}

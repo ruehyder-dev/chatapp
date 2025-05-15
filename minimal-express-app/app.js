@@ -10,8 +10,25 @@ const jwt = require("jsonwebtoken");
 const WebSocket = require('ws');
 const mongoose = require('mongoose');
 const { connectToDatabase } = require("./database"); // Import the function
+const Message = require("./models/Message");
+const User = require("./models/User"); // Import your User model
+const Chat = require("./models/Chat"); // Import your Chat model
 
 const app = express();
+app.use(express.json());
+
+connectToDatabase()
+  .then(() => {
+    console.log("Database connected. Starting server...");
+    app.listen(3000, () => {
+      console.log("Server is running on port 3000");
+    });
+  })
+  .catch(err => {
+    console.error("Failed to connect to the database:", err);
+    process.exit(1); // Exit the process if the database connection fails
+  });
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -82,38 +99,22 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required." });
-  }
-
   try {
-    console.log("Connecting to users collection...");
-    const usersCollection = db.collection("users");
-
-    console.log("Finding user:", username);
-    const user = await usersCollection.findOne({ username });
+    const user = await User.findOne({ username });
     if (!user) {
-      console.log("User not found");
-      return res.status(400).json({ error: "Invalid username or password." });
+      return res.status(404).send({ error: "User not found" });
     }
 
-    console.log("Verifying password...");
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log("Password mismatch");
-      return res.status(400).json({ error: "Invalid username or password." });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).send({ error: "Invalid credentials" });
     }
 
-    console.log("Creating token...");
-    const jwtSecret = process.env.JWT_SECRET || "your_secret_key";
-    const token = jwt.sign({ username: user.username }, jwtSecret, { expiresIn: "1h" });
-    console.log("Generated token:", token);
-
-    console.log("Login successful");
-    res.status(200).json({ message: "Login successful!", token });
+    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    res.send({ token });
   } catch (err) {
     console.error("Error during user login:", err);
-    res.status(500).json({ error: "Internal server error. Please try again later." });
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
@@ -151,20 +152,14 @@ app.get("/api/chat", authenticateToken, (req, res) => {
 });
 
 app.get("/api/active-chats", authenticateToken, async (req, res) => {
-  const username = req.user.username; // The logged-in user's username
+  const userId = req.user.id;
 
   try {
-    const chatsCollection = db.collection("chats");
-    const activeChats = await chatsCollection
-      .find({ participants: username }) // Find chats where the user is a participant
-      .sort({ "messages.createdAt": -1 }) // Sort by the most recent message
-      .project({ participants: 1, allParticipants:1,  messages: { $slice: -1 } }) // Include only the last message
-      .toArray();
-
-    res.json(activeChats); // Send the active chats to the frontend
+    const chats = await Chat.find({ participants: userId }).populate("messages");
+    res.send(chats);
   } catch (err) {
     console.error("Error fetching active chats:", err);
-    res.status(500).json({ error: "Failed to fetch active chats." });
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
@@ -245,32 +240,25 @@ app.get("/api/chats/:chatId", authenticateToken, async (req, res) => {
 app.post("/api/chats/:chatId/messages", authenticateToken, async (req, res) => {
   const { chatId } = req.params;
   const { text } = req.body;
-  const sender = req.user.username;
-
-  if (!text) {
-    console.log("Message text is missing");
-    return res.status(400).json({ error: "Message text is required." });
-  }
+  const sender = req.user.id;
 
   try {
-    const chatsCollection = db.collection("chats");
-    const result = await chatsCollection.updateOne(
-      { _id: new ObjectId(chatId) },
-      { $push: { messages: { sender, text, createdAt: new Date() } } }
-    );
+    const newMessage = new Message({
+      text,
+      sender,
+      readBy: [sender] // Add the sender to the `readBy` array
+    });
 
-    console.log("Database update result:", result);
+    // Save the message to the database
+    await newMessage.save();
 
-    if (result.modifiedCount === 0) {
-      console.log("Chat not found");
-      return res.status(404).json({ error: "Chat not found." });
-    }
+    // Optionally, associate the message with a chat
+    await Chat.findByIdAndUpdate(chatId, { $push: { messages: newMessage._id } });
 
-    console.log("Message saved successfully");
-    res.status(201).json({ message: "Message sent successfully." });
+    res.status(201).send(newMessage);
   } catch (err) {
-    console.error("Error sending message:", err);
-    res.status(500).json({ error: "Failed to send message." });
+    console.error("Error creating message:", err);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
@@ -331,6 +319,30 @@ app.post("/api/chats/:chatId/leave", authenticateToken, async (req, res) => {
   } catch (err) {
     console.error("Error leaving chat:", err);
     res.status(500).json({ error: "Failed to leave chat." });
+  }
+});
+
+app.post("/api/chats/:chatId/mark-as-read", authenticateToken, async (req, res) => {
+  const chatId = req.params.chatId;
+  const userId = req.user.id; // Assuming `req.user` contains the authenticated user's info
+
+  try {
+    const chat = await db.collection("chats").findOne({ _id: chatId });
+    if (!chat) {
+      return res.status(404).send({ error: "Chat not found" });
+    }
+
+    // Update all unread messages to mark them as read by the current user
+    await db.collection("chats").updateOne(
+      { _id: chatId },
+      { $set: { "messages.$[msg].readBy": userId } },
+      { arrayFilters: [{ "msg.readBy": { $ne: userId } }] }
+    );
+
+    res.send({ success: true });
+  } catch (err) {
+    console.error("Error marking messages as read:", err);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
