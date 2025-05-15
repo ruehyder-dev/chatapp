@@ -80,27 +80,29 @@ function handleWebSocketClose() {
 }
 
 // Handle WebSocket messages
+let typingTimeout; // Declare a global variable to track the typing timeout
+
 function handleWebSocketMessage(event) {
-  console.log("handleWebSocketMessage triggered"); // Add this log
+  console.log("handleWebSocketMessage triggered");
   const chatMessagesDiv = document.getElementById("chat-messages");
   const typingIndicator = document.getElementById("typing-indicator");
   const message = JSON.parse(event.data);
 
-  console.log("Message received from server:", message); // Log the received message
+  console.log("Message received from server:", message);
 
-  const signedInUser = localStorage.getItem("username"); // Get the signed-in user's username
+  const signedInUser = localStorage.getItem("username");
 
   if (message.type === "typing") {
     if (message.sender !== signedInUser) {
-      // Only show the typing indicator if the sender is not the signed-in user
+      // Show the typing indicator dynamically
       typingIndicator.textContent = `${message.sender} is typing...`;
       typingIndicator.style.display = "block";
-      new Promise((resolve) => setTimeout(() => {
-        resolve();
-      }, 3000)).then(() => {
-        // Hide the typing indicator after 3 seconds
+
+      // Clear any existing timeout and set a new one to hide the indicator after 10 seconds
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
         typingIndicator.style.display = "none";
-      });
+      }, 10000); // 10 seconds of inactivity
     }
   } else if (message.type === "message") {
     // Create a new message element
@@ -207,17 +209,27 @@ document.addEventListener("DOMContentLoaded", () => {
   connectWebSocket(); // Ensure this is called only once
 });
 
-let typingTimeout;
-
 // Handle typing events
+let userTypingTimeout; // Timeout to track user inactivity
+let isTyping = false; // Flag to track if the user is currently typing
+
 function handleTyping() {
   const messageInput = document.getElementById("message-input");
-  //const typingIndicator = document.getElementById("typing-indicator");
 
-  // Notify the server that the user is typing
   if (messageInput.value.trim() !== "") {
-    socket.send(JSON.stringify({ type: "typing", sender: localStorage.getItem("username") }));
+    if (!isTyping) {
+      // Notify the server that the user has started typing
+      socket.send(JSON.stringify({ type: "typing", sender: localStorage.getItem("username") }));
+      isTyping = true; // Set the typing flag to true
+    }
 
+    // Clear the user inactivity timeout and reset it
+    clearTimeout(userTypingTimeout);
+    userTypingTimeout = setTimeout(() => {
+      // Notify the server that the user has stopped typing after 10 seconds of inactivity
+      socket.send(JSON.stringify({ type: "stop-typing", sender: localStorage.getItem("username") }));
+      isTyping = false; // Reset the typing flag
+    }, 10000); // 10 seconds of inactivity
   }
 }
 
@@ -226,6 +238,11 @@ function handleKeyPress(event) {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault(); // Prevent adding a new line
     sendMessage(); // Call the sendMessage function
+
+    // Notify the server to stop the typing indicator
+    socket.send(JSON.stringify({ type: "stop-typing", sender: localStorage.getItem("username") }));
+    isTyping = false; // Reset the typing flag
+    clearTimeout(userTypingTimeout); // Clear the inactivity timeout
   }
 }
 
