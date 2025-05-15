@@ -105,8 +105,18 @@ function handleWebSocketMessage(event) {
       }, 10000); // 10 seconds of inactivity
     }
   } else if (message.type === "message") {
-    // Create a new message element
+    // Create a new message bubble
     const messageDiv = document.createElement("div");
+    messageDiv.classList.add("chat-bubble");
+
+    // Check if the message is from the signed-in user
+    if (message.sender === signedInUser) {
+      messageDiv.classList.add("right"); // Align to the right
+    } else {
+      messageDiv.classList.add("left"); // Align to the left
+    }
+
+    // Set the message content
     messageDiv.textContent = `${message.sender}: ${message.text}`;
     chatMessagesDiv.appendChild(messageDiv);
 

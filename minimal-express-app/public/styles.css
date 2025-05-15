@@ -244,6 +244,16 @@ input:focus, button:hover {
   margin-bottom: 20px;
 }
 
+/* Chat messages container */
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Add spacing between messages */
+  padding: 10px;
+  overflow-y: auto; /* Add scroll if messages exceed the container height */
+  max-height: 400px; /* Optional: Limit the height of the chat area */
+}
+
 .chat-messages {
   width: 100%;
   height: 300px;
@@ -254,6 +264,31 @@ input:focus, button:hover {
   background-color: #222; /* Dark gray background for messages */
   color: #fff; /* White text for messages */
   margin-bottom: 20px;
+}
+
+/* Chat bubble for other users */
+.chat-bubble {
+  max-width: 70%; /* Limit the width of the bubble */
+  padding: 10px;
+  border-radius: 10px;
+  margin: 5px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Other users' messages (on the left) */
+.chat-bubble.left {
+  background-color: #f0f0f0; /* Light gray background */
+  color: #000; /* Black text */
+  align-self: flex-start; /* Align to the left */
+}
+
+/* Signed-in user's messages (on the right) */
+.chat-bubble.right {
+  background-color: #007bff; /* Blue background */
+  color: #fff; /* White text */
+  align-self: flex-end; /* Align to the right */
 }
 
 /* Chat Input Styles */
