@@ -139,7 +139,11 @@ app.get("/api/chat", authenticateToken, (req, res) => {
 app.get("/api/active-chats", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.username; // or req.user.id if you use IDs
-    const chats = await Chat.find({ participants: userId }).populate("messages");
+    const chats = await Chat.find({ participants: userId })
+      .populate({
+        path: "messages",
+        options: { sort: { createdAt: 1 } } // 1 for oldest-to-newest, -1 for newest-to-oldest
+      });
     res.send(chats);
   } catch (err) {
     console.error("Error fetching active chats:", err);

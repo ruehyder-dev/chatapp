@@ -60,8 +60,7 @@ async function loadActiveChats() {
           // Get the latest message and truncate if necessary
           let latestMessage = "No messages yet";
           if (chat.messages.length > 0) {
-            const msg = chat.messages[0];
-            // Defensive: check if msg is an object and has .text
+            const msg = chat.messages[chat.messages.length - 1]; // Get the last message
             latestMessage = (msg && typeof msg === "object" && msg.text) ? msg.text : "No messages yet";
           }
           const truncatedMessage = latestMessage.length > 50 ? latestMessage.substring(0, 50) + "..." : latestMessage;
