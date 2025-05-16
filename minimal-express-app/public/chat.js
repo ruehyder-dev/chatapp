@@ -64,7 +64,7 @@ async function loadActiveChats() {
             latestMessage = (msg && typeof msg === "object" && msg.text) ? msg.text : "No messages yet";
           }
           const truncatedMessage = latestMessage.length > 50 ? latestMessage.substring(0, 50) + "..." : latestMessage;
-
+// commment there 
           const chatItem = document.createElement("div");
           chatItem.classList.add("chat-item");
           chatItem.innerHTML = `
