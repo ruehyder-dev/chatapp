@@ -932,10 +932,9 @@ input:focus, button:hover {
 
 /* Style for individual check marks */
 .check-mark {
-  width: 12px;
-  height: 12px;
-  display: inline-block;
-  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   background-color: gray; /* Default color for unsent/unread */
 }
 
